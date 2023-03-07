@@ -1,0 +1,13 @@
+/* Montserrat */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+
+/* Jost */
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700;800&display=swap');
+
+.montserrat{
+    font-family: 'Montserrat', sans-serif;
+}
+
+.jost{
+    font-family: 'Jost', sans-serif;
+}
