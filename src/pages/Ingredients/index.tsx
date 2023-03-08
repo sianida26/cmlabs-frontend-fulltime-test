@@ -3,8 +3,72 @@ import pizza from "../../assets/pizza.png";
 import { AppHeader, IngredientCard } from "../../components";
 import { BsArrowRight } from "react-icons/bs";
 import Input from "../../components/Input";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { Ingredient } from "../../interfaces";
+import { useDebouncedValue, useScrollIntoView } from "@mantine/hooks";
 
 export default function Ingredients() {
+
+    const { scrollIntoView, targetRef } = useScrollIntoView<HTMLDivElement>({
+        offset: 60,
+    });
+
+	const [data, setData] = useState<Ingredient[]>([]);
+	const [filteredData, setFilteredData] = useState<Ingredient[]>([]);
+	const [searchValue, setSearchValue] = useState("");
+	const [showNumberItems, setShowNumberItems] = useState(12);
+
+	const [debouncedSearchValue] = useDebouncedValue(searchValue, 500);
+
+	// Fetch Data from server
+	useEffect(() => {
+		const fetchIngredients = async () => {
+			try {
+				const response = await axios(
+					"https://themealdb.com/api/json/v1/1/list.php?i=list"
+				);
+
+				//set ingredients data into master state
+				setData(
+					response.data.meals?.map((meal: any) => ({
+						id: +meal.idIngredient,
+						description: meal.strDescription ?? "No Description",
+						name: meal.strIngredient,
+					})) ?? []
+				);
+				console.log(response);
+			} catch (e) {
+				console.error(e);
+				toast.error("Terjadi Kesalahan. Silakan coba lagi");
+			}
+		};
+
+		fetchIngredients();
+	}, []);
+
+	// Perform search filtering
+	useEffect(() => {
+		//reset number of item show
+		setShowNumberItems(12);
+
+		//perform filtering
+		setFilteredData(
+			data.filter(
+				(ingredient) =>
+					(
+						ingredient.name.toLowerCase() +
+						ingredient.description.toLowerCase()
+					).indexOf(debouncedSearchValue.toLowerCase()) >= 0
+			)
+		);
+	}, [debouncedSearchValue]);
+
+	const handleShowMore = () => {
+		setShowNumberItems((prev) => prev + 12);
+	};
+
 	return (
 		<div className="w-screen min-h-screen bg-lightGreen jost">
 			<AppHeader variant="dark-all" />
@@ -20,8 +84,8 @@ export default function Ingredients() {
 							simple recipes will make your life easier.
 						</p>
 
-						<div className="flex-center">
-							<Button className="hover:scale-110 transition duration-500">
+						<div className="flex-center md:justify-start">
+							<Button onClick={ () => scrollIntoView() } className="hover:scale-110 transition duration-500">
 								Get Started
 								<BsArrowRight />
 							</Button>
@@ -41,10 +105,15 @@ export default function Ingredients() {
 					<h2 className="font-semibold text-2xl text-center text-[#1D2401]">
 						Search your Ingredients:
 					</h2>
-					<form className="flex flex-col md:flex-row items-center gap-2 lg:flex-grow lg:justify-end">
+					<form
+						onSubmit={(e) => e.preventDefault()}
+						className="flex flex-col md:flex-row items-center gap-2 lg:flex-grow lg:justify-end"
+					>
 						<Input
 							type="text"
 							placeholder="Enter Ingredient"
+							value={searchValue}
+							onChange={(e) => setSearchValue(e.target.value)}
 							className="w-full py-2 px-3 rounded-md border border-neutral-400 caret-green-600 focus:outline-green-600 md:w-64 lg:w-80"
 						/>
 						<Button className="flex-shrink-0">
@@ -54,16 +123,25 @@ export default function Ingredients() {
 				</section>
 
 				{/* Ingredients list */}
-				<section className="w-full max-w-screen-2xl mx-auto py-4 px-8 md:px-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:mt-12 gap-8 md:gap-12">
-					{Array.from(new Array(12)).map((_, i) => (
+				<section ref={ targetRef } className="w-full max-w-screen-2xl mx-auto py-4 px-8 md:px-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:mt-12 gap-8 md:gap-12">
+					{(filteredData.length
+						? filteredData
+						: data.slice(0, showNumberItems)
+					).map((ingredient, i) => (
 						<IngredientCard
-                            key={ i }
-							imageUrl="https://www.themealdb.com/images/media/meals/urzj1d1587670726.jpg"
-							description="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla varius, metus sed facilisis ullamcorper, tellus arcu placerat mauris, non vulputate dolor tellus convallis elit. Aenean ipsum arcu, euismod vitae accumsan sed, feugiat id ligula. Donec sit amet maximus velit. Vivamus porta facilisis velit, quis luctus odio egestas in. Etiam malesuada lectus sed est hendrerit, sit amet malesuada ante fermentum. Quisque posuere sapien augue, ac scelerisque est euismod eu. Sed faucibus elementum pulvinar."
+							key={ingredient.id}
+							imageUrl={`https://www.themealdb.com/images/ingredients/${ingredient.name}.png`}
+							description={ingredient.description}
 							// description="aa"
-							title="Title"
+							title={ingredient.name}
 						/>
 					))}
+
+					<div className="w-full md:col-span-2 lg:col-span-3 xl:col-span-4">
+						<Button onClick={handleShowMore} className="mx-auto">
+							Show More
+						</Button>
+					</div>
 				</section>
 			</main>
 		</div>
