@@ -3,7 +3,7 @@ import pizza from "../../assets/pizza.png";
 import { AppHeader, IngredientCard } from "../../components";
 import { BsArrowRight } from "react-icons/bs";
 import Input from "../../components/Input";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Ingredient } from "../../interfaces";
@@ -16,11 +16,21 @@ export default function Ingredients() {
     });
 
 	const [data, setData] = useState<Ingredient[]>([]);
-	const [filteredData, setFilteredData] = useState<Ingredient[]>([]);
 	const [searchValue, setSearchValue] = useState("");
+	const [isLoading, setLoading] = useState(true);
 	const [showNumberItems, setShowNumberItems] = useState(12);
 
 	const [debouncedSearchValue] = useDebouncedValue(searchValue, 500);
+
+	const filteredData = useMemo(() => {
+		return data.filter(
+			(ingredient) =>
+			  (
+				ingredient.name.toLowerCase() +
+				ingredient.description.toLowerCase()
+			  ).indexOf(debouncedSearchValue.toLowerCase()) >= 0
+		  );
+	}, [data, debouncedSearchValue])
 
 	// Fetch Data from server
 	useEffect(() => {
@@ -38,7 +48,8 @@ export default function Ingredients() {
 						name: meal.strIngredient,
 					})) ?? []
 				);
-				console.log(response);
+				
+				setLoading(false);
 			} catch (e) {
 				console.error(e);
 				toast.error("Terjadi Kesalahan. Silakan coba lagi");
@@ -48,21 +59,9 @@ export default function Ingredients() {
 		fetchIngredients();
 	}, []);
 
-	// Perform search filtering
+	// reset number of item show when filtering
 	useEffect(() => {
-		//reset number of item show
 		setShowNumberItems(12);
-
-		//perform filtering
-		setFilteredData(
-			data.filter(
-				(ingredient) =>
-					(
-						ingredient.name.toLowerCase() +
-						ingredient.description.toLowerCase()
-					).indexOf(debouncedSearchValue.toLowerCase()) >= 0
-			)
-		);
 	}, [debouncedSearchValue]);
 
 	const handleShowMore = () => {
@@ -124,16 +123,19 @@ export default function Ingredients() {
 
 				{/* Ingredients list */}
 				<section ref={ targetRef } className="w-full max-w-screen-2xl mx-auto py-4 px-8 md:px-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:mt-12 gap-8 md:gap-12">
-					{(filteredData.length
+					{
+					(
+						isLoading ? [...new Array(12)]
+						: filteredData.length
 						? filteredData
 						: data.slice(0, showNumberItems)
 					).map((ingredient, i) => (
 						<IngredientCard
-							key={ingredient.id}
-							imageUrl={`https://www.themealdb.com/images/ingredients/${ingredient.name}.png`}
-							description={ingredient.description}
-							// description="aa"
-							title={ingredient.name}
+							key={i}
+							imageUrl={`https://www.themealdb.com/images/ingredients/${ingredient?.name ?? ""}.png`}
+							description={ingredient?.description ?? ""}
+							loading={ isLoading }
+							title={ingredient?.name ?? ""}
 						/>
 					))}
 
