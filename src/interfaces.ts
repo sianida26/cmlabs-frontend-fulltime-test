@@ -3,3 +3,11 @@ export interface Ingredient{
     description: string,
     name: string,
 }
+
+export interface Meal{
+    id: number,
+    name: string,
+    thumbnail: string,
+    cookingTime: number,
+    calories: number,
+}

@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 interface Props {
 	imageUrl: string;
 	title: string;
@@ -7,8 +9,9 @@ interface Props {
 
 export default function IngredientCard(props: Partial<Props>) {
 	return (
-		<div
-			className="w-full p-6 rounded-xl bg-white flex flex-col overflow-clip hover:scale-110 transition duration-500"
+		<Link
+      to={`/ingredient/${ props.title?.toLowerCase() ?? "" }`}
+			className={`w-full p-6 rounded-xl bg-white flex flex-col overflow-clip hover:scale-110 transition duration-500 focus:outline-none ${ props.loading && "pointer-events-none" }`}
 			style={{ boxShadow: "4px 4px 16px 4px rgba(0, 0, 0, 0.25)" }}
 		>
 			{props.loading ? (
@@ -40,6 +43,6 @@ export default function IngredientCard(props: Partial<Props>) {
 					</>
 				)}
 			</div>
-		</div>
+		</Link>
 	);
 }

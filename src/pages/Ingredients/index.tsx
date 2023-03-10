@@ -23,6 +23,9 @@ export default function Ingredients() {
 	const [debouncedSearchValue] = useDebouncedValue(searchValue, 500);
 
 	const filteredData = useMemo(() => {
+
+		setShowNumberItems(12);
+
 		return data.filter(
 			(ingredient) =>
 			  (
@@ -58,11 +61,6 @@ export default function Ingredients() {
 
 		fetchIngredients();
 	}, []);
-
-	// reset number of item show when filtering
-	useEffect(() => {
-		setShowNumberItems(12);
-	}, [debouncedSearchValue]);
 
 	const handleShowMore = () => {
 		setShowNumberItems((prev) => prev + 12);
@@ -126,9 +124,7 @@ export default function Ingredients() {
 					{
 					(
 						isLoading ? [...new Array(12)]
-						: filteredData.length
-						? filteredData
-						: data.slice(0, showNumberItems)
+						: filteredData.slice(0, showNumberItems)
 					).map((ingredient, i) => (
 						<IngredientCard
 							key={i}

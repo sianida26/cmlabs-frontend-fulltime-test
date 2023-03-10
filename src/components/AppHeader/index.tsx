@@ -10,12 +10,12 @@ interface Props {
 export default function AppHeader(props: Props) {
   return (
     <header className="w-full p-4 lg:px-8">
-      <div className="flex justify-between items-center w-full max-w-screen-2xl mx-auto">
+      <div className={`flex justify-between items-center w-full max-w-screen-2xl mx-auto ${ props.variant === "dark-all" ? "text-black" : "text-white" }`}>
         {/* ganjel sm */}
         <div className="w-8 md:hidden" />
 
         {/* logo */}
-        <img src={ logo } alt="Logo" className="self-center h-8" />
+        <img src={ logo } alt="Logo" className={`self-center h-8 ${ props.variant !== "dark-all" && "filter-white" }`} />
 
         {/* menu */}
         <ul className="hidden md:flex items-center jost gap-8">
@@ -26,7 +26,7 @@ export default function AppHeader(props: Props) {
 
         {/* drawer button */}
         <button className="rounded-md p-1 md:hidden">
-          <HiOutlineMenuAlt3 className="w-8 h-8 text-neutral-700" />
+          <HiOutlineMenuAlt3 className={`w-8 h-8 ${ props.variant === "dark-all" ? "text-neutral-700" : "text-white" }`} />
         </button>
       </div>
     </header>
