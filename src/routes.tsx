@@ -1,7 +1,7 @@
-import { createHashRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import { Ingredients, IngredientDetail, Meal } from "./pages";
 
-const router = createHashRouter([
+const router = createBrowserRouter([
     {
         path: "/",
         element: <Ingredients />
